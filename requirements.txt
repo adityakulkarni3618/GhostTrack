@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+numpy
+scipy
+torch
+sgp4
+numpy
+python-multipart

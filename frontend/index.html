@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GhostTrack // Mission Control</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Premium Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom Style Sheet -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="glow-container">
+        <div class="radial-glow color-primary"></div>
+        <div class="radial-glow color-secondary"></div>
+    </div>
+    
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="brand">
+                <i class="fa-solid fa-satellite-dish brand-icon"></i>
+                <div class="brand-text">
+                    <h1>GHOST<span>TRACK</span></h1>
+                    <p>Orbital Forensics Unit</p>
+                </div>
+            </div>
+            
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
+                <a href="#catalog" class="nav-item"><i class="fa-solid fa-database"></i> Shadow Catalog</a>
+                <a href="#about" class="nav-item"><i class="fa-solid fa-circle-info"></i> Operations Manual</a>
+            </nav>
+            
+            <div class="system-status-card">
+                <div class="status-indicator">
+                    <span class="pulse-dot"></span>
+                    <span class="status-label">System Online</span>
+                </div>
+                <div class="meta-row">
+                    <span class="meta-label">Model:</span>
+                    <span class="meta-val">GhostNet PINN v1.4</span>
+                </div>
+                <div class="meta-row">
+                    <span class="meta-label">Sat Target:</span>
+                    <span class="meta-val">BLITS (NORAD 35871)</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Dashboard Content -->
+        <main class="main-content">
+            <header class="header">
+                <div class="header-title">
+                    <h2>Mission Control Center</h2>
+                    <p>Real-time sub-10cm forensic trajectory tracking and cataloging</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-primary" id="btn-simulate">
+                        <i class="fa-solid fa-bolt"></i> Simulate Collision Event
+                    </button>
+                </div>
+            </header>
+
+            <div class="dashboard-grid">
+                <!-- Live Telemetry Card -->
+                <div class="card card-telemetry">
+                    <div class="card-header">
+                        <h3><i class="fa-solid fa-wave-square"></i> Telemetry Vector Feed</h3>
+                        <span class="tag-status">Live</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="telemetry-grid">
+                            <div class="telemetry-item">
+                                <span class="tele-label">&Delta;V<sub>x</sub> (Linear Velocity)</span>
+                                <span class="tele-val" id="val-dvx">0.0000 m/s</span>
+                            </div>
+                            <div class="telemetry-item">
+                                <span class="tele-label">&Delta;V<sub>y</sub> (Linear Velocity)</span>
+                                <span class="tele-val" id="val-dvy">0.0000 m/s</span>
+                            </div>
+                            <div class="telemetry-item">
+                                <span class="tele-label">&Delta;V<sub>z</sub> (Linear Velocity)</span>
+                                <span class="tele-val" id="val-dvz">0.0000 m/s</span>
+                            </div>
+                            <div class="telemetry-item">
+                                <span class="tele-label">&Delta;&omega;<sub>x</sub> (Attitude Perturbation)</span>
+                                <span class="tele-val" id="val-dwx">0.0000 rad/s</span>
+                            </div>
+                            <div class="telemetry-item">
+                                <span class="tele-label">&Delta;&omega;<sub>y</sub> (Attitude Perturbation)</span>
+                                <span class="tele-val" id="val-dwy">0.0000 rad/s</span>
+                            </div>
+                            <div class="telemetry-item">
+                                <span class="tele-label">&Delta;&omega;<sub>z</sub> (Attitude Perturbation)</span>
+                                <span class="tele-val" id="val-dwz">0.0000 rad/s</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- GhostNet AI Inference Card -->
+                <div class="card card-inference">
+                    <div class="card-header">
+                        <h3><i class="fa-solid fa-brain"></i> GhostNet Inference Solver</h3>
+                        <span class="tag-model">PyTorch</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="inference-stats">
+                            <div class="stat-box">
+                                <div class="stat-header">
+                                    <span>Estimated Debris Mass</span>
+                                    <i class="fa-solid fa-weight-hanging"></i>
+                                </div>
+                                <div class="stat-value" id="val-mass">--g</div>
+                                <div class="ground-truth-val" id="truth-mass">Ground Truth: --g</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-header">
+                                    <span>Relative Impact Velocity</span>
+                                    <i class="fa-solid fa-gauge-simple-high"></i>
+                                </div>
+                                <div class="stat-value" id="val-velocity">-- km/s</div>
+                                <div class="ground-truth-val" id="truth-velocity">Ground Truth: -- km/s</div>
+                            </div>
+                        </div>
+                        <div class="inference-accuracy" id="val-accuracy">
+                            Confidence Level: <span class="pct">--%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2D Trajectory Map Card -->
+                <div class="card card-map">
+                    <div class="card-header">
+                        <h3><i class="fa-solid fa-earth-americas"></i> Probabilistic Debris Trajectory Map (24-Hour Projection)</h3>
+                        <div class="card-tools">
+                            <span class="legend-dot nominal-dot"></span> Nominal Path
+                            <span class="legend-dot cloud-dot ml-2"></span> Uncertainty Cloud
+                        </div>
+                    </div>
+                    <div class="card-body chart-container">
+                        <canvas id="trajectory-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Shadow Catalog Section -->
+            <section class="section" id="catalog">
+                <div class="section-header">
+                    <h2><i class="fa-solid fa-database"></i> Shadow Catalog DB</h2>
+                    <p>Inferred list of non-cooperative, sub-10cm ghost orbital debris</p>
+                </div>
+                <div class="table-container card">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Object ID</th>
+                                <th>Timestamp</th>
+                                <th>Estimated Mass (g)</th>
+                                <th>Impact Velocity (km/s)</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="catalog-body">
+                            <!-- Injected by Javascript -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+    
+    <!-- Custom JS script -->
+    <script src="app.js"></script>
+</body>
+</html>
