@@ -3,6 +3,8 @@ let trajectoryChart = null;
 let shadowCatalog = JSON.parse(localStorage.getItem('ghosttrack_catalog')) || [];
 let activeMode = 'monte-carlo'; // 'monte-carlo', 'blits', 'canadarm'
 let currentViewMode = '3d'; // '3d', '2d'
+const API_BASE = window.location.port === '8000' ? '' : 'http://127.0.0.1:8000';
+
 
 // Three.js 3D Globe variables
 let scene, camera, renderer, wrapper;
@@ -524,7 +526,7 @@ window.runCollisionSimulation = async function(event) {
     
     try {
         // 1. Fetch random telemetry
-        const simResponse = await fetch('/api/simulate');
+        const simResponse = await fetch(`${API_BASE}/api/simulate`);
         if (!simResponse.ok) throw new Error('Simulation failed to generate data');
         const simData = await simResponse.json();
         
@@ -593,7 +595,7 @@ window.runHistoricalSimulation = async function(eventKey, event) {
     
     try {
         // 1. Fetch historical event database
-        const eventsResponse = await fetch('/api/historical_events');
+        const eventsResponse = await fetch(`${API_BASE}/api/historical_events`);
         if (!eventsResponse.ok) throw new Error('Could not retrieve historical database');
         const eventsDb = await eventsResponse.json();
         
@@ -654,7 +656,7 @@ window.runHistoricalSimulation = async function(eventKey, event) {
 
 // Helper: Call PINN Solver
 async function callSolver(telemetry) {
-    const solveResponse = await fetch('/api/solve', {
+    const solveResponse = await fetch(`${API_BASE}/api/solve`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(telemetry)
@@ -665,7 +667,7 @@ async function callSolver(telemetry) {
 
 // Helper: Call Trajectory Propagator
 async function propagateTrajectory(velocity_kms, mass_g) {
-    const propResponse = await fetch('/api/propagate', {
+    const propResponse = await fetch(`${API_BASE}/api/propagate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
