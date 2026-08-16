@@ -19,6 +19,8 @@ let earthBaseMat, earthGridMat, earthRingMat;
 let activeGlobeObjects = [];
 let isDragging = false;
 let previousMousePosition = { x: 0, y: 0 };
+let isAutoRotating = true;
+let orbitShells = { leo: null, meo: null, geo: null };
 
 document.addEventListener('DOMContentLoaded', () => {
     initThreeGlobe();
@@ -297,6 +299,48 @@ function initThreeGlobe() {
         earthGroup.add(loop);
     }
     
+    // LEO, MEO, GEO Shell overlays
+    const isLight = document.body.classList.contains('light-theme');
+    
+    function createOrbitRing(radius, color, dashed = false) {
+        const points = [];
+        const segments = 120;
+        for (let i = 0; i <= segments; i++) {
+            const theta = (i / segments) * Math.PI * 2;
+            points.push(new THREE.Vector3(Math.cos(theta) * radius, 0, Math.sin(theta) * radius));
+        }
+        const geom = new THREE.BufferGeometry().setFromPoints(points);
+        let mat;
+        if (dashed) {
+            mat = new THREE.LineDashedMaterial({
+                color: color,
+                dashSize: 0.12,
+                gapSize: 0.06,
+                transparent: true,
+                opacity: 0.35
+            });
+        } else {
+            mat = new THREE.LineBasicMaterial({
+                color: color,
+                transparent: true,
+                opacity: 0.35
+            });
+        }
+        const line = new THREE.Line(geom, mat);
+        if (dashed) line.computeLineDistances();
+        return line;
+    }
+
+    orbitShells.leo = createOrbitRing(2.15, isLight ? 0x4f46e5 : 0x00f2fe, true);
+    orbitShells.meo = createOrbitRing(2.80, isLight ? 0x8b5cf6 : 0xa855f7, true);
+    orbitShells.geo = createOrbitRing(4.24, isLight ? 0xe11d48 : 0xff2a5f, false);
+    
+    earthGroup.add(orbitShells.leo);
+    earthGroup.add(orbitShells.meo);
+    earthGroup.add(orbitShells.geo);
+    
+    orbitShells.meo.visible = false; // Hide MEO by default to match HTML controls
+    
     // 3. User interaction drag handler
     wrapper.addEventListener('pointerdown', (e) => {
         isDragging = true;
@@ -322,9 +366,9 @@ function initThreeGlobe() {
     function animate() {
         requestAnimationFrame(animate);
         
-        // Auto-rotation when not dragging
-        if (!isDragging) {
-            earthGroup.rotation.y += 0.001;
+        // Auto-rotation when enabled and not dragging
+        if (!isDragging && isAutoRotating) {
+            earthGroup.rotation.y += 0.0012;
         }
         
         // Tick trajectory tracking beacon
@@ -1150,4 +1194,33 @@ window.runSandboxReconstruction = async function() {
         }
     }
 };
+
+// Toggle camera auto rotation
+window.toggleAutoRotate = function() {
+    isAutoRotating = !isAutoRotating;
+    const btn = document.getElementById('btn-auto-rotate');
+    if (btn) {
+        btn.innerHTML = isAutoRotating ? 
+            '<i class="fa-solid fa-spin fa-arrows-rotate" style="color: var(--color-primary);"></i> Auto-Rotate: ON' : 
+            '<i class="fa-solid fa-arrows-rotate"></i> Auto-Rotate: OFF';
+    }
+};
+
+// Reset Earth rotation alignment (Camera Focus reset)
+window.resetCamera = function() {
+    if (earthGroup) {
+        earthGroup.rotation.set(0, 0, 0);
+    }
+};
+
+// Toggle 3D Orbit context shells
+window.toggleOrbitShell = function(type) {
+    if (orbitShells && orbitShells[type]) {
+        const chk = document.getElementById(`chk-shell-${type}`);
+        if (chk) {
+            orbitShells[type].visible = chk.checked;
+        }
+    }
+};
+
 

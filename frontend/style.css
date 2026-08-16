@@ -1350,6 +1350,27 @@ body.light-theme .stat-box:hover .stat-icon {
     color: rgba(79, 70, 229, 0.25) !important;
 }
 
+/* Light mode overrides for HUD panels and controls */
+body.light-theme .hud-controls-panel,
+body.light-theme .hud-shells-panel {
+    background: rgba(255, 255, 255, 0.95) !important;
+    border-color: rgba(79, 70, 229, 0.15) !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05) !important;
+}
+
+body.light-theme .hud-controls-panel button {
+    border-color: rgba(79, 70, 229, 0.15) !important;
+    color: #1e293b !important;
+    background: rgba(79, 70, 229, 0.02) !important;
+}
+body.light-theme .hud-controls-panel button:hover {
+    background: rgba(79, 70, 229, 0.08) !important;
+}
+
+body.light-theme .hud-shells-panel label {
+    color: #334155 !important;
+}
+
 
 
 
