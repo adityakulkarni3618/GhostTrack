@@ -1,0 +1,62 @@
+================================================================================
+GHOSTTRACK // ORBITAL FORENSICS COMMAND CENTER DIGEST
+================================================================================
+
+1. DIRECTORY OVERVIEW
+--------------------------------------------------------------------------------
+- /backend
+  - simulator.py  : Calculates momentum conservation, angular torques, 
+                    punctured hull diameters, and kinetic energy (kJ).
+  - solver.py     : Houses the GhostNet PyTorch PINN (Physics-Informed Neural Network).
+  - propagator.py : RK4 integrator simulating J2 oblate gravity perturbations.
+  - main.py       : FastAPI backend serving endpoints on port 8000.
+  - verify.py     : Automated verification suite.
+- /frontend
+  - index.html    : Dashboard main view (3D WebGL Globe, 2D Plot, Sandbox panel).
+  - catalog.html  : Database registry with search and inspector details.
+  - manual.html   : Reference guides and formulas.
+  - style.css     : Cyberpunk styling and Dark/Light theme values.
+  - app.js        : Clientside loops, Three.js layers, and local state sync.
+
+2. CORE API ROUTING (PORT 8000)
+--------------------------------------------------------------------------------
+- GET  /api/simulate         : Generates random collision telemetry for Monte Carlo.
+- GET  /api/historical_events: Returns presets for BLITS and Canadarm2.
+- POST /api/solve            : Runs the PINN network to output mass and velocity.
+                               Accepts: dV (x,y,z), dW (x,y,z), sat_mass, sat_radius.
+- POST /api/propagate        : Computes 30-day coordinates for debris clouds.
+
+3. FORENSIC PHYSICS MODEL
+--------------------------------------------------------------------------------
+- Linear Momentum Transfer:
+  m_debris * v_debris + M_sat * V_sat,0 = (m_debris + M_sat) * V_sat,post
+  
+- Profile Scaling Adjustment (Baseline 50.0 kg):
+  m_actual = m_predicted * (M_sat,actual / 50.0)
+
+- Torque / Attitude Spin:
+  delta_omega = I_inverse * (r x J)  [where I = 2/5 * M_sat * R_sat^2]
+
+4. HULL DIAGNOSTICS & DAMAGE COEFFICIENTS
+--------------------------------------------------------------------------------
+- Solar Panel Loss %   : Logarithmic curve based on debris impact velocity.
+- Hull Breach Threshold: Punctures if debris kinetic energy (KE) exceeds 
+                         100 Joules per mm of hull thickness.
+
+5. 3D WebGL INTERACTIVE GLOBE (Three.js)
+--------------------------------------------------------------------------------
+- Earth Mesh Radius : 2.0 units (scaled altitude: alt / 6371.0 * 0.4)
+- LEO Orbit Shell   : Radius 2.15 (Dashed Cyan)
+- MEO Orbit Shell   : Radius 2.80 (Dashed Purple)
+- GEO Orbit Shell   : Radius 4.24 (Solid Rose-Red)
+- HUD Controls      : Auto-Rotate Toggle, Reset Focus, Mouse Scroll Wheel Zoom.
+
+6. LOCALSTORAGE KEY SYNC
+--------------------------------------------------------------------------------
+- ghosttrack_theme   : Theme state ('dark-theme' or 'light-theme').
+- ghosttrack_catalog : JSON array storing identified debris telemetry items.
+- ghosttrack_profile : Current active Target Satellite Profile.
+
+================================================================================
+Generated: August 2026 // GhostTrack Orbital Forensics Unit
+================================================================================
