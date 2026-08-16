@@ -812,6 +812,7 @@ function saveDebrisToCatalog(debris) {
 
 function renderCatalog(filteredData = null) {
     const tbody = document.getElementById('catalog-body');
+    if (!tbody) return;
     tbody.innerHTML = '';
     
     const dataToRender = filteredData || shadowCatalog;
@@ -893,10 +894,87 @@ window.focusDebris = function(debrisId) {
     const item = shadowCatalog.find(d => d.id === debrisId);
     if (!item) return;
     
-    // 1. Prepare simulated trajectory structure
+    const detailPanel = document.getElementById('detail-panel');
+    if (detailPanel) {
+        // We are on catalog.html, show inspection details card
+        const riskLevel = (item.alerts && item.alerts.length > 0) ? 'THREAT' : 'MONITORED';
+        const badgeColor = riskLevel === 'THREAT' ? 'background: rgba(255, 42, 95, 0.08); color: var(--color-danger); border: 1px solid rgba(255, 42, 95, 0.15)' : 'background: rgba(0, 242, 254, 0.08); color: var(--color-primary); border: 1px solid rgba(0, 242, 254, 0.15)';
+        
+        let alertsHtml = '';
+        if (item.alerts && item.alerts.length > 0) {
+            item.alerts.forEach(alert => {
+                alertsHtml += `
+                    <div style="background: rgba(255, 42, 95, 0.03); border: 1px solid rgba(255, 42, 95, 0.1); border-radius: 8px; padding: 12px; margin-bottom: 10px; text-align: left;">
+                        <div style="display: flex; justify-content: space-between; font-weight: 700; font-size: 0.85rem; color: var(--color-text-light); margin-bottom: 4px;">
+                            <span><i class="fa-solid fa-satellite-dish" style="color: var(--color-danger);"></i> ${alert.satellite_name}</span>
+                            <span style="color: var(--color-danger);">${alert.min_distance_km.toFixed(1)} km</span>
+                        </div>
+                        <div style="font-size: 0.78rem; color: var(--color-text-muted);">Approach hour: ${alert.time_hours.toFixed(1)}h</div>
+                        <div style="font-size: 0.72rem; color: var(--color-primary); display: flex; justify-content: space-between; margin-top: 4px; font-family: var(--font-display);">
+                            <span>Lat: ${alert.coordinates.lat.toFixed(2)}°</span>
+                            <span>Lon: ${alert.coordinates.lon.toFixed(2)}°</span>
+                            <span>Alt: ${alert.coordinates.alt.toFixed(1)} km</span>
+                        </div>
+                    </div>
+                `;
+            });
+        } else {
+            alertsHtml = `<div style="font-size: 0.82rem; color: var(--color-text-muted); text-align: center; padding: 10px 0;"><i class="fa-solid fa-circle-check" style="color: var(--color-green); margin-right: 6px;"></i> Clear of active satellites.</div>`;
+        }
+        
+        let diagnosticsHtml = '';
+        if (item.diagnostics) {
+            const hullColor = item.diagnostics.punctured ? 'var(--color-danger)' : 'var(--color-green)';
+            const hullBg = item.diagnostics.punctured ? 'rgba(255, 42, 95, 0.08)' : 'rgba(0, 230, 118, 0.08)';
+            const hullBorder = item.diagnostics.punctured ? 'rgba(255, 42, 95, 0.15)' : 'rgba(0, 230, 118, 0.15)';
+            diagnosticsHtml = `
+                <div style="margin-top: 20px; border-top: 1px dashed rgba(255,255,255,0.08); padding-top: 15px; text-align: left;">
+                    <h4 style="font-family: var(--font-display); font-size: 0.9rem; color: var(--color-text-light); margin-bottom: 12px; letter-spacing: 0.5px;"><i class="fa-solid fa-circle-radiation" style="color: var(--color-primary); margin-right: 6px;"></i> Structural Diagnostics</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 0.82rem; margin-bottom: 15px; font-family: var(--font-display);">
+                        <div>Debris Dia: <strong style="color: var(--color-primary);">${item.diagnostics.diameter_mm.toFixed(2)} mm</strong></div>
+                        <div>Kinetic Energy: <strong style="color: var(--color-secondary);">${item.diagnostics.kinetic_energy_kj.toFixed(2)} kJ</strong></div>
+                        <div style="grid-column: span 2; padding: 6px 12px; border-radius: 6px; background: ${hullBg}; border: 1px solid ${hullBorder}; color: ${hullColor}; font-weight: 700; text-align: center; font-size: 0.75rem;">
+                            HULL STATUS: ${item.diagnostics.punctured ? 'BREACH DETECTED' : 'SURVIVED / DENTED'}
+                        </div>
+                    </div>
+                    <div style="font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 6px; display: flex; justify-content: space-between;">
+                        <span>Solar panel loss:</span>
+                        <span style="color: var(--color-danger); font-weight: 700;">${item.diagnostics.solar_damage_pct.toFixed(1)}%</span>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.02); border-radius: 4px; height: 6px; overflow: hidden; position: relative;">
+                        <div style="width: ${item.diagnostics.solar_damage_pct}%; height: 100%; background: linear-gradient(90deg, var(--color-accent), var(--color-danger));"></div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        detailPanel.style.display = 'block';
+        detailPanel.style.textAlign = 'initial';
+        detailPanel.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 15px;">
+                <h3 style="font-family: var(--font-display); font-size: 1.35rem; color: var(--color-text-light); font-weight: 700; letter-spacing: 0.5px;">${item.id}</h3>
+                <span class="badge" style="${badgeColor}">${riskLevel}</span>
+            </div>
+            <div style="font-size: 0.85rem; display: flex; flex-direction: column; gap: 10px; color: var(--color-text); text-align: left;">
+                <div><i class="fa-solid fa-clock" style="color: var(--color-text-muted); margin-right: 10px; width: 14px;"></i> Cataloged: <strong style="color: var(--color-text-light);">${item.timestamp}</strong></div>
+                <div><i class="fa-solid fa-scale-balanced" style="color: var(--color-text-muted); margin-right: 10px; width: 14px;"></i> Est. Mass: <strong style="color: var(--color-text-light);">${item.mass} g</strong></div>
+                <div><i class="fa-solid fa-gauge-high" style="color: var(--color-text-muted); margin-right: 10px; width: 14px;"></i> Rel. Velocity: <strong style="color: var(--color-text-light);">${item.velocity} km/s</strong></div>
+            </div>
+            
+            <div style="margin-top: 20px; border-top: 1px dashed rgba(255,255,255,0.08); padding-top: 15px; text-align: left;">
+                <h4 style="font-family: var(--font-display); font-size: 0.9rem; color: var(--color-text-light); margin-bottom: 12px; letter-spacing: 0.5px;"><i class="fa-solid fa-radar" style="color: var(--color-accent); margin-right: 6px;"></i> Conjunction Alerts</h4>
+                ${alertsHtml}
+            </div>
+            
+            ${diagnosticsHtml}
+        `;
+        return;
+    }
+    
+    // 1. Prepare simulated trajectory structure (Control Deck index.html only)
     const trajectoryData = {
         nominal: item.nominalPath,
-        cloud: [], // Hide cloud in focus mode for simple inspect
+        cloud: [], 
         alerts: item.alerts
     };
     
@@ -916,11 +994,13 @@ window.focusDebris = function(debrisId) {
     }
     
     // 4. Update HUD target label
-    document.getElementById('globe-sat-target').innerText = `Focus: ${item.id}`;
+    const satTargetEl = document.getElementById('globe-sat-target');
+    if (satTargetEl) satTargetEl.innerText = `Focus: ${item.id}`;
     
     // 5. Draw warnings for the focused debris
     renderAlerts(item.alerts);
     
     // 6. Smooth scroll to trajectory visualizer card
-    document.querySelector('.card-map').scrollIntoView({ behavior: 'smooth' });
+    const mapCard = document.querySelector('.card-map');
+    if (mapCard) mapCard.scrollIntoView({ behavior: 'smooth' });
 };

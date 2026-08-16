@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GhostTrack // Forensic Operations Manual</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="brand">
+                <i class="fa-solid fa-satellite brand-icon"></i>
+                <div class="brand-text">
+                    <h1>GHOST<span>TRACK</span></h1>
+                    <p>Orbital Forensics Unit</p>
+                </div>
+            </div>
+            
+            <nav class="nav-menu">
+                <a href="index.html" class="nav-item" id="nav-dash"><i class="fa-solid fa-gauge-high"></i> Control Deck</a>
+                <a href="catalog.html" class="nav-item" id="nav-catalog"><i class="fa-solid fa-database"></i> Shadow Catalog</a>
+                <a href="manual.html" class="nav-item active" id="nav-manual"><i class="fa-solid fa-book-open"></i> Forensic Manual</a>
+            </nav>
+            
+            <!-- Side Panel Status Indicators -->
+            <div class="system-status-card">
+                <div class="status-indicator">
+                    <span class="pulse-dot"></span>
+                    <span class="status-label">Manual Offline Sync</span>
+                </div>
+                <div class="meta-row">
+                    <span class="meta-label">Revision:</span>
+                    <span class="meta-val">v4.2-AUG-26</span>
+                </div>
+                <div class="meta-row">
+                    <span class="meta-label">Reference:</span>
+                    <span class="meta-val">ISRO Harsha '24</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <main class="main-content">
+            <!-- Header Banner -->
+            <header class="header">
+                <div class="header-title">
+                    <h2>Operations & Physics Reference</h2>
+                    <p>A reference card for the mathematical modeling and equations that power GhostTrack's solver and propagator.</p>
+                </div>
+                <div class="header-actions">
+                    <button id="theme-toggle" class="btn-theme-toggle" title="Toggle Light/Dark Theme">
+                        <i class="fa-solid fa-moon"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Manual Cards Deck -->
+            <div class="manual-grid">
+                <div class="manual-card">
+                    <h3><i class="fa-solid fa-brain"></i> Physics-Informed Neural Network (PINN)</h3>
+                    <p>Traditional AI needs thousands of labeled images. GhostTrack relies on a PINN that directly embeds momentum-transfer dynamics into the loss function.</p>
+                    <ul>
+                        <li><strong>Pre-impact momentum:</strong> We track the satellite's nominal TLE orbital path before the collision event.</li>
+                        <li><strong>Conservation of momentum:</strong> <code>m<sub>deb</sub> &middot; v<sub>deb</sub> + M<sub>sat</sub> &middot; v<sub>sat,0</sub> = m<sub>deb</sub> &middot; v'<sub>deb</sub> + M<sub>sat</sub> &middot; v'<sub>sat</sub></code></li>
+                        <li><strong>Sensor telemetry:</strong> Attitude changes (<code>&Delta;&omega;<sub>x,y,z</sub></code>) allow us to resolve the debris' offset impact leverage arms.</li>
+                    </ul>
+                </div>
+
+                <div class="manual-card">
+                    <h3><i class="fa-solid fa-clock"></i> Trajectory Propagation Math</h3>
+                    <p>Once debris velocity is estimated, we propagate its orbit using Runge-Kutta 4th Order (RK4) integration, factoring in gravitational and atmospheric perturbations.</p>
+                    <ul>
+                        <li><strong>J2 Oblate Earth Gravity:</strong> Account for Earth not being a perfect sphere, causing orbital precession.</li>
+                        <li><strong>Atmospheric Drag:</strong> <code>a<sub>drag</sub> = -0.5 &middot; C<sub>d</sub> &middot; (A/m) &middot; &rho; &middot; v &middot; <b>v</b></code></li>
+                        <li><strong>Uncertainty Cloud:</strong> Monte Carlo perturbation of initial conditions maps 3D danger margins for 30 days.</li>
+                    </ul>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Custom JS logic -->
+    <script src="app.js"></script>
+</body>
+</html>

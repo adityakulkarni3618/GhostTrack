@@ -30,9 +30,9 @@
             </div>
             
             <nav class="nav-menu">
-                <a href="#" class="nav-item active" id="nav-dash"><i class="fa-solid fa-gauge-high"></i> Control Deck</a>
-                <a href="#catalog" class="nav-item" id="nav-catalog"><i class="fa-solid fa-database"></i> Shadow Catalog</a>
-                <a href="#manual" class="nav-item" id="nav-manual"><i class="fa-solid fa-book-open"></i> Forensic Manual</a>
+                <a href="index.html" class="nav-item active" id="nav-dash"><i class="fa-solid fa-gauge-high"></i> Control Deck</a>
+                <a href="catalog.html" class="nav-item" id="nav-catalog"><i class="fa-solid fa-database"></i> Shadow Catalog</a>
+                <a href="manual.html" class="nav-item" id="nav-manual"><i class="fa-solid fa-book-open"></i> Forensic Manual</a>
             </nav>
             
             <!-- Side Panel Status Indicators -->
@@ -269,71 +269,6 @@
                 </div>
             </div>
 
-            <!-- Shadow Catalog Section -->
-            <section class="section" id="catalog">
-                <div class="section-header">
-                    <div class="section-header-title">
-                        <h2><i class="fa-solid fa-database"></i> The Shadow Catalog Database</h2>
-                        <p>Forensically inferred list of non-cooperative, sub-10cm ghost orbital debris cataloged in real-time.</p>
-                    </div>
-                    <div class="catalog-actions">
-                        <div class="search-wrapper">
-                            <i class="fa-solid fa-magnifying-glass"></i>
-                            <input type="text" class="search-input" id="catalog-search" placeholder="Search catalog..." oninput="searchCatalog()">
-                        </div>
-                        <button class="btn-secondary" onclick="exportCatalog()"><i class="fa-solid fa-download"></i> Export JSON</button>
-                        <button class="btn-secondary btn-delete" onclick="clearCatalog()"><i class="fa-solid fa-trash-can"></i> Clear All</button>
-                    </div>
-                </div>
-                <div class="table-container card">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Debris ID</th>
-                                <th>Cataloged Date / Time</th>
-                                <th>Estimated Mass</th>
-                                <th>Impact Velocity</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="catalog-body">
-                            <!-- Populated dynamically -->
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-
-            <!-- Forensic Operations Manual -->
-            <section class="section" id="manual">
-                <div class="section-header">
-                    <div class="section-header-title">
-                        <h2><i class="fa-solid fa-book-open"></i> Operations & Physics Reference</h2>
-                        <p>A reference card for the mathematical modeling and equations that power GhostTrack's solver and propagator.</p>
-                    </div>
-                </div>
-                <div class="manual-grid">
-                    <div class="manual-card">
-                        <h3><i class="fa-solid fa-brain"></i> Physics-Informed Neural Network (PINN)</h3>
-                        <p>Traditional AI needs thousands of labeled images. GhostTrack relies on a PINN that directly embeds momentum-transfer dynamics into the loss function.</p>
-                        <ul>
-                            <li><strong>Pre-impact momentum:</strong> We track the satellite's nominal TLE orbital path before the collision event.</li>
-                            <li><strong>Conservation of momentum:</strong> <code>m<sub>deb</sub> &middot; v<sub>deb</sub> + M<sub>sat</sub> &middot; v<sub>sat,0</sub> = m<sub>deb</sub> &middot; v'<sub>deb</sub> + M<sub>sat</sub> &middot; v'<sub>sat</sub></code></li>
-                            <li><strong>Sensor telemetry:</strong> Attitude changes (<code>&Delta;&omega;<sub>x,y,z</sub></code>) allow us to resolve the debris' offset impact leverage arms.</li>
-                        </ul>
-                    </div>
-
-                    <div class="manual-card">
-                        <h3><i class="fa-solid fa-clock"></i> Trajectory Propagation Math</h3>
-                        <p>Once debris velocity is estimated, we propagate its orbit using Runge-Kutta 4th Order (RK4) integration, factoring in gravitational and atmospheric perturbations.</p>
-                        <ul>
-                            <li><strong>J2 Oblate Earth Gravity:</strong> Account for Earth not being a perfect sphere, causing orbital precession.</li>
-                            <li><strong>Atmospheric Drag:</strong> <code>a<sub>drag</sub> = -0.5 &middot; C<sub>d</sub> &middot; (A/m) &middot; &rho; &middot; v &middot; <b>v</b></code></li>
-                            <li><strong>Uncertainty Cloud:</strong> Monte Carlo perturbation of initial conditions maps 3D danger margins for 30 days.</li>
-                        </ul>
-                    </div>
-                </div>
-            </section>
         </main>
     </div>
     

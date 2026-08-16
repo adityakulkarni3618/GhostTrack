@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GhostTrack // Shadow Catalog Database</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="brand">
+                <i class="fa-solid fa-satellite brand-icon"></i>
+                <div class="brand-text">
+                    <h1>GHOST<span>TRACK</span></h1>
+                    <p>Orbital Forensics Unit</p>
+                </div>
+            </div>
+            
+            <nav class="nav-menu">
+                <a href="index.html" class="nav-item" id="nav-dash"><i class="fa-solid fa-gauge-high"></i> Control Deck</a>
+                <a href="catalog.html" class="nav-item active" id="nav-catalog"><i class="fa-solid fa-database"></i> Shadow Catalog</a>
+                <a href="manual.html" class="nav-item" id="nav-manual"><i class="fa-solid fa-book-open"></i> Forensic Manual</a>
+            </nav>
+            
+            <!-- Side Panel Status Indicators -->
+            <div class="system-status-card">
+                <div class="status-indicator">
+                    <span class="pulse-dot"></span>
+                    <span class="status-label">Database Connected</span>
+                </div>
+                <div class="meta-row">
+                    <span class="meta-label">Source:</span>
+                    <span class="meta-val">Local Telemetry DB</span>
+                </div>
+                <div class="meta-row">
+                    <span class="meta-label">Sync Status:</span>
+                    <span class="meta-val">Real-Time</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <main class="main-content">
+            <!-- Header Banner -->
+            <header class="header">
+                <div class="header-title">
+                    <h2>The Shadow Catalog Database</h2>
+                    <p>Forensically inferred list of non-cooperative, sub-10cm ghost orbital debris cataloged in real-time.</p>
+                </div>
+                <div class="header-actions">
+                    <button id="theme-toggle" class="btn-theme-toggle" title="Toggle Light/Dark Theme">
+                        <i class="fa-solid fa-moon"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Table and Detail Layout -->
+            <div class="catalog-layout" style="display: grid; grid-template-columns: 1.8fr 1fr; gap: 30px;">
+                <!-- Main Table Section -->
+                <div class="catalog-section" style="display: flex; flex-direction: column; gap: 20px;">
+                    <div class="catalog-header-bar" style="display: flex; justify-content: space-between; align-items: center; gap: 15px; flex-wrap: wrap;">
+                        <div class="search-wrapper">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" class="search-input" id="catalog-search" placeholder="Search catalog..." oninput="searchCatalog()">
+                        </div>
+                        <div class="catalog-actions" style="display: flex; gap: 10px;">
+                            <button class="btn-secondary" onclick="exportCatalog()"><i class="fa-solid fa-download"></i> Export JSON</button>
+                            <button class="btn-secondary btn-delete" onclick="clearCatalog()"><i class="fa-solid fa-trash-can"></i> Clear All</button>
+                        </div>
+                    </div>
+                    
+                    <div class="table-container card">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Debris ID</th>
+                                    <th>Cataloged Date / Time</th>
+                                    <th>Estimated Mass</th>
+                                    <th>Impact Velocity</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="catalog-body">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Inspection Detail Panel -->
+                <div class="card detail-panel-card" id="detail-panel" style="padding: 28px; min-height: 480px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; color: var(--color-text-muted); transition: all 0.3s ease;">
+                    <i class="fa-solid fa-circle-info" style="font-size: 3rem; margin-bottom: 20px; color: var(--color-primary); opacity: 0.3;"></i>
+                    <h3 style="font-family: var(--font-display); font-size: 1.2rem; color: var(--color-text-light); margin-bottom: 10px;">Debris Inspector</h3>
+                    <p style="font-size: 0.9rem; max-width: 250px; line-height: 1.5;">Select a debris record from the catalog to load coordinate vectors, structural penetration alerts, and hazard maps.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Custom JS logic -->
+    <script src="app.js"></script>
+</body>
+</html>
