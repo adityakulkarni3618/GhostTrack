@@ -570,15 +570,16 @@ body {
 
 .stat-icon {
     font-size: 2.2rem;
-    color: rgba(255, 255, 255, 0.03);
+    color: rgba(255, 255, 255, 0.12);
     position: absolute;
     right: 20px;
     pointer-events: none;
-    transition: color 0.3s ease;
+    transition: color 0.3s ease, transform 0.3s ease;
 }
 
 .stat-box:hover .stat-icon {
-    color: rgba(0, 242, 254, 0.08);
+    color: rgba(0, 242, 254, 0.25);
+    transform: scale(1.08);
 }
 
 .inference-accuracy {
@@ -1339,6 +1340,14 @@ body.light-theme .sandbox-deck input {
 }
 body.light-theme .sandbox-deck input:focus {
     border-color: var(--color-primary) !important;
+}
+
+/* Light mode overrides for stat box background icons */
+body.light-theme .stat-icon {
+    color: rgba(79, 70, 229, 0.1) !important;
+}
+body.light-theme .stat-box:hover .stat-icon {
+    color: rgba(79, 70, 229, 0.25) !important;
 }
 
 
