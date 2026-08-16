@@ -28,6 +28,8 @@ class TelemetryData(BaseModel):
     dW_x: float
     dW_y: float
     dW_z: float
+    sat_mass: float = 50.0
+    sat_radius: float = 0.5
 
 class PropagationRequest(BaseModel):
     velocity_kms: float
@@ -110,13 +112,19 @@ def post_solve(data: TelemetryData):
         telemetry_list = [data.dV_x, data.dV_y, data.dV_z, data.dW_x, data.dW_y, data.dW_z]
         predictions = predict_debris_properties(telemetry_list)
         
+        # Scale predicted mass based on target satellite mass profile (baseline is 50.0kg)
+        mass_scale = data.sat_mass / 50.0
+        predictions["predicted_mass_g"] *= mass_scale
+        predictions["predicted_mass_g"] = max(0.1, predictions["predicted_mass_g"])
+        
         # Calculate structural/solar diagnostics
         dV = np.array([data.dV_x, data.dV_y, data.dV_z])
         dW = np.array([data.dW_x, data.dW_y, data.dW_z])
         diagnostics = compute_collision_diagnostics(
             dV, dW, 
             mass_g=predictions["predicted_mass_g"], 
-            velocity_kms=predictions["predicted_velocity_kms"]
+            velocity_kms=predictions["predicted_velocity_kms"],
+            sat_radius=data.sat_radius
         )
         
         return {

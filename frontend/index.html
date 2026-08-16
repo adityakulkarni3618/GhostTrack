@@ -53,6 +53,15 @@
                     <span class="meta-label">Threat Scan:</span>
                     <span class="meta-val">150km Horizon</span>
                 </div>
+                <div class="meta-row" style="flex-direction: column; align-items: stretch; gap: 6px; padding-top: 10px; margin-top: 10px; border-top: 1px dashed rgba(255,255,255,0.08);">
+                    <span class="meta-label" style="font-size: 0.68rem;">Active Target Profile:</span>
+                    <select id="sat-profile-select" onchange="changeSatelliteProfile()" class="theme-select" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08); color: var(--color-text-light); padding: 8px 12px; border-radius: 6px; font-family: var(--font-sans); font-size: 0.75rem; outline: none; cursor: pointer; transition: all 0.3s;">
+                        <option value="micro_sat">Scientific Micro-Sat (50 kg)</option>
+                        <option value="iss">Space Station (450 Tons)</option>
+                        <option value="comms_sat">Communications Sat (2 Tons)</option>
+                        <option value="cube_sat">CubeSat (4 kg)</option>
+                    </select>
+                </div>
             </div>
         </aside>
 
@@ -115,6 +124,48 @@
                             <span>25544 (ISS)</span>
                         </div>
                         <button class="mode-btn" onclick="runHistoricalSimulation('iss_canadarm2_2021', event)">Reconstruct ISS</button>
+                    </div>
+                </div>
+                
+                <!-- Forensic Sandbox Deck -->
+                <div class="sandbox-deck card" style="margin-top: 25px; padding: 25px; display: flex; flex-direction: column; gap: 15px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px;">
+                        <h4 style="font-family: var(--font-display); font-size: 1.1rem; color: var(--color-text-light); margin: 0; display: flex; align-items: center; gap: 10px;">
+                            <i class="fa-solid fa-sliders" style="color: var(--color-primary);"></i> Forensic Telemetry Sandbox
+                        </h4>
+                        <span class="tag-status" style="background: rgba(255, 183, 3, 0.08); color: var(--color-accent); border: 1px solid rgba(255, 183, 3, 0.15); padding: 4px 10px; border-radius: 4px; font-size: 0.7rem; font-family: var(--font-display);">Manual Vector Override</span>
+                    </div>
+                    <p style="font-size: 0.8rem; color: var(--color-text-muted); margin: 0;">Specify custom observed linear velocity shifts (&Delta;V) and attitude spin rate changes (&Delta;&omega;) to solve custom debris mass and path models.</p>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 15px; margin-top: 10px;">
+                        <div class="sandbox-input-group" style="display: flex; flex-direction: column; gap: 6px;">
+                            <label style="font-size: 0.65rem; color: var(--color-text-muted); font-weight: 700; text-transform: uppercase;">&Delta;V_x (m/s)</label>
+                            <input type="number" id="sandbox-dvx" value="0.0010" step="0.0001" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; padding: 8px 12px; color: #fff; font-family: var(--font-display); font-size: 0.9rem; outline: none;">
+                        </div>
+                        <div class="sandbox-input-group" style="display: flex; flex-direction: column; gap: 6px;">
+                            <label style="font-size: 0.65rem; color: var(--color-text-muted); font-weight: 700; text-transform: uppercase;">&Delta;V_y (m/s)</label>
+                            <input type="number" id="sandbox-dvy" value="-0.0005" step="0.0001" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; padding: 8px 12px; color: #fff; font-family: var(--font-display); font-size: 0.9rem; outline: none;">
+                        </div>
+                        <div class="sandbox-input-group" style="display: flex; flex-direction: column; gap: 6px;">
+                            <label style="font-size: 0.65rem; color: var(--color-text-muted); font-weight: 700; text-transform: uppercase;">&Delta;V_z (m/s)</label>
+                            <input type="number" id="sandbox-dvz" value="0.0020" step="0.0001" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; padding: 8px 12px; color: #fff; font-family: var(--font-display); font-size: 0.9rem; outline: none;">
+                        </div>
+                        <div class="sandbox-input-group" style="display: flex; flex-direction: column; gap: 6px;">
+                            <label style="font-size: 0.65rem; color: var(--color-text-muted); font-weight: 700; text-transform: uppercase;">&Delta;&omega;_x (rad/s)</label>
+                            <input type="number" id="sandbox-dwx" value="0.2500" step="0.01" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; padding: 8px 12px; color: #fff; font-family: var(--font-display); font-size: 0.9rem; outline: none;">
+                        </div>
+                        <div class="sandbox-input-group" style="display: flex; flex-direction: column; gap: 6px;">
+                            <label style="font-size: 0.65rem; color: var(--color-text-muted); font-weight: 700; text-transform: uppercase;">&Delta;&omega;_y (rad/s)</label>
+                            <input type="number" id="sandbox-dwy" value="0.5000" step="0.01" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; padding: 8px 12px; color: #fff; font-family: var(--font-display); font-size: 0.9rem; outline: none;">
+                        </div>
+                        <div class="sandbox-input-group" style="display: flex; flex-direction: column; gap: 6px;">
+                            <label style="font-size: 0.65rem; color: var(--color-text-muted); font-weight: 700; text-transform: uppercase;">&Delta;&omega;_z (rad/s)</label>
+                            <input type="number" id="sandbox-dwz" value="-0.1500" step="0.01" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; padding: 8px 12px; color: #fff; font-family: var(--font-display); font-size: 0.9rem; outline: none;">
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: flex-end; margin-top: 5px;">
+                        <button class="mode-btn" id="btn-run-sandbox" onclick="runSandboxReconstruction()" style="width: auto; padding: 12px 30px; margin-top: 0; background: linear-gradient(135deg, var(--color-primary), var(--color-secondary)); color: #000; border: none; font-weight: 700; border-radius: 8px; cursor: pointer; transition: all 0.3s;"><i class="fa-solid fa-calculator"></i> Run Sandbox Reconstruction</button>
                     </div>
                 </div>
             </section>
@@ -273,6 +324,6 @@
     </div>
     
     <!-- Custom JS logic -->
-    <script src="app.js?v=2.2"></script>
+    <script src="app.js?v=2.3"></script>
 </body>
 </html>

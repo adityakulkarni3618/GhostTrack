@@ -5,6 +5,12 @@ let activeMode = 'monte-carlo'; // 'monte-carlo', 'blits', 'canadarm'
 let currentViewMode = '3d'; // '3d', '2d'
 const API_BASE = window.location.port === '8000' ? '' : 'http://127.0.0.1:8000';
 
+let activeProfile = JSON.parse(localStorage.getItem('ghosttrack_profile')) || {
+    id: 'micro_sat',
+    name: 'Scientific Micro-Sat',
+    mass: 50.0,
+    radius: 0.5
+};
 
 // Three.js 3D Globe variables
 let scene, camera, renderer, wrapper;
@@ -20,6 +26,11 @@ document.addEventListener('DOMContentLoaded', () => {
     renderCatalog();
     initTheme();
     initStructuralCanvas();
+    
+    const profileSelect = document.getElementById('sat-profile-select');
+    if (profileSelect) {
+        profileSelect.value = activeProfile.id;
+    }
     
     // Smooth scrolling navigation highlights
     document.querySelectorAll('.nav-item').forEach(item => {
@@ -656,10 +667,15 @@ window.runHistoricalSimulation = async function(eventKey, event) {
 
 // Helper: Call PINN Solver
 async function callSolver(telemetry) {
+    const payload = {
+        ...telemetry,
+        sat_mass: activeProfile.mass,
+        sat_radius: activeProfile.radius
+    };
     const solveResponse = await fetch(`${API_BASE}/api/solve`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(telemetry)
+        body: JSON.stringify(payload)
     });
     if (!solveResponse.ok) throw new Error('PINN solver failed to compute parameters');
     return await solveResponse.json();
@@ -785,15 +801,30 @@ function renderAlerts(alerts) {
     alerts.forEach(alert => {
         const alertItem = document.createElement('div');
         alertItem.className = 'alert-item';
+        
+        const dist = alert.min_distance_km;
+        let badgeClass = 'badge-monitored';
+        let badgeText = 'MONITORED';
+        if (dist < 30) {
+            badgeClass = 'badge-critical';
+            badgeText = 'CRITICAL';
+        } else if (dist < 80) {
+            badgeClass = 'badge-warning';
+            badgeText = 'WARNING';
+        }
+
         alertItem.innerHTML = `
             <div class="alert-header">
                 <span class="alert-target"><i class="fa-solid fa-satellite-dish"></i> ${alert.satellite_name}</span>
-                <span class="alert-distance">${alert.min_distance_km.toFixed(1)} km</span>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <span class="badge ${badgeClass}" style="font-size: 0.65rem; padding: 2px 6px; font-weight: 700; border-radius: 4px;">${badgeText}</span>
+                    <span class="alert-distance" style="font-weight: 700;">${dist.toFixed(1)} km</span>
+                </div>
             </div>
             <div class="alert-body">
                 Debris predicted within minimum separation envelope at hour ${alert.time_hours.toFixed(1)} post-impact.
             </div>
-            <div class="alert-coords">
+            <div class="alert-coords" style="font-family: var(--font-display);">
                 <span>Lat: ${alert.coordinates.lat.toFixed(2)}°</span>
                 <span>Lon: ${alert.coordinates.lon.toFixed(2)}°</span>
                 <span>Alt: ${alert.coordinates.alt.toFixed(1)} km</span>
@@ -1006,3 +1037,117 @@ window.focusDebris = function(debrisId) {
     const mapCard = document.querySelector('.card-map');
     if (mapCard) mapCard.scrollIntoView({ behavior: 'smooth' });
 };
+
+// Change active target profile properties
+window.changeSatelliteProfile = function() {
+    const selectEl = document.getElementById('sat-profile-select');
+    if (!selectEl) return;
+    
+    const val = selectEl.value;
+    let mass = 50.0;
+    let radius = 0.5;
+    let name = 'Scientific Micro-Sat';
+    
+    if (val === 'iss') {
+        mass = 450000.0;
+        radius = 50.0;
+        name = 'Space Station (ISS)';
+    } else if (val === 'comms_sat') {
+        mass = 2000.0;
+        radius = 3.0;
+        name = 'Communications Sat';
+    } else if (val === 'cube_sat') {
+        mass = 4.0;
+        radius = 0.15;
+        name = 'CubeSat';
+    }
+    
+    activeProfile = { id: val, name, mass, radius };
+    localStorage.setItem('ghosttrack_profile', JSON.stringify(activeProfile));
+    
+    // Force sync all dropdown selectors across pages if they exist
+    document.querySelectorAll('#sat-profile-select').forEach(el => {
+        el.value = val;
+    });
+};
+
+// Run manual telemetry sandbox reconstruction
+window.runSandboxReconstruction = async function() {
+    const btn = document.getElementById('btn-run-sandbox');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing PINN...';
+    }
+    
+    try {
+        const dV_x = parseFloat(document.getElementById('sandbox-dvx').value) || 0;
+        const dV_y = parseFloat(document.getElementById('sandbox-dvy').value) || 0;
+        const dV_z = parseFloat(document.getElementById('sandbox-dvz').value) || 0;
+        const dW_x = parseFloat(document.getElementById('sandbox-dwx').value) || 0;
+        const dW_y = parseFloat(document.getElementById('sandbox-dwy').value) || 0;
+        const dW_z = parseFloat(document.getElementById('sandbox-dwz').value) || 0;
+        
+        const telemetry = { dV_x, dV_y, dV_z, dW_x, dW_y, dW_z };
+        
+        // 1. Solve via PINN
+        const solverResult = await callSolver(telemetry);
+        
+        // 2. Propagate trajectory
+        const trajectory = await propagateTrajectory(solverResult.predicted_velocity_kms, solverResult.predicted_mass_g);
+        
+        // 3. Render visuals
+        updateGlobeVisuals(trajectory);
+        updateChartData(trajectory);
+        
+        if (solverResult.diagnostics) {
+            updateDiagnosticsUI(solverResult.diagnostics);
+            drawStructuralImpact(
+                solverResult.diagnostics.impact_coords,
+                solverResult.diagnostics.punctured,
+                solverResult.diagnostics.diameter_mm,
+                solverResult.diagnostics.shockwave_radius_cm
+            );
+        }
+        
+        // 4. Save to Shadow Catalog
+        const debrisItem = {
+            id: `DEBRIS-${Math.floor(1000 + Math.random() * 9000)}`,
+            timestamp: new Date().toLocaleString(),
+            mass: solverResult.predicted_mass_g.toFixed(2),
+            velocity: solverResult.predicted_velocity_kms.toFixed(2),
+            nominalPath: trajectory.nominal,
+            alerts: trajectory.alerts,
+            diagnostics: solverResult.diagnostics
+        };
+        saveDebrisToCatalog(debrisItem);
+        
+        // 5. Update HUD label
+        const label = document.getElementById('globe-sat-target');
+        if (label) label.innerText = `Focus: Sandbox (${debrisItem.id})`;
+        
+        // 6. Draw warnings
+        renderAlerts(trajectory.alerts);
+        
+        // Update Telemetry Panel display fields
+        document.getElementById('val-dvx').innerText = dV_x.toFixed(4) + ' m/s';
+        document.getElementById('val-dvy').innerText = dV_y.toFixed(4) + ' m/s';
+        document.getElementById('val-dvz').innerText = dV_z.toFixed(4) + ' m/s';
+        document.getElementById('val-dwx').innerText = dW_x.toFixed(4) + ' rad/s';
+        document.getElementById('val-dwy').innerText = dW_y.toFixed(4) + ' rad/s';
+        document.getElementById('val-dwz').innerText = dW_z.toFixed(4) + ' rad/s';
+        
+        // Scroll to trajectory chart
+        const mapCard = document.querySelector('.card-map');
+        if (mapCard) mapCard.scrollIntoView({ behavior: 'smooth' });
+        
+    } catch (err) {
+        console.error(err);
+        alert(`Forensic Sandbox Error: ${err.message}`);
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-calculator"></i> Run Sandbox Reconstruction';
+        }
+    }
+};
+

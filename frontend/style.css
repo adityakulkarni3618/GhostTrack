@@ -1293,6 +1293,55 @@ body.light-theme .manual-card {
     animation: fadeInSlide 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+/* Threat level badges */
+.badge-critical {
+    background: rgba(255, 42, 95, 0.08) !important;
+    color: var(--color-danger) !important;
+    border: 1px solid rgba(255, 42, 95, 0.2) !important;
+}
+.badge-warning {
+    background: rgba(255, 183, 3, 0.08) !important;
+    color: var(--color-accent) !important;
+    border: 1px solid rgba(255, 183, 3, 0.2) !important;
+}
+.badge-monitored {
+    background: rgba(0, 242, 254, 0.08) !important;
+    color: var(--color-primary) !important;
+    border: 1px solid rgba(0, 242, 254, 0.2) !important;
+}
+
+/* Satellite selector custom styling overrides */
+.theme-select {
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+.theme-select:hover {
+    border-color: var(--color-primary) !important;
+}
+.theme-select option {
+    background: #0d1117 !important;
+    color: #fff !important;
+}
+body.light-theme .theme-select option {
+    background: #ffffff !important;
+    color: #334155 !important;
+}
+body.light-theme .theme-select {
+    background: rgba(0, 0, 0, 0.02) !important;
+    border-color: rgba(0,0,0,0.1) !important;
+    color: #334155 !important;
+}
+
+/* Light mode overrides for sandbox card inputs */
+body.light-theme .sandbox-deck input {
+    background: rgba(0, 0, 0, 0.02) !important;
+    border-color: rgba(0, 0, 0, 0.1) !important;
+    color: #1e293b !important;
+}
+body.light-theme .sandbox-deck input:focus {
+    border-color: var(--color-primary) !important;
+}
+
+
 
 
 
