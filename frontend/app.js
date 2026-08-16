@@ -62,7 +62,7 @@ function drawStructuralImpact(coords, punctured, diameter_mm, shockwave_radius_c
     
     // Theme colors
     const strokeColor = isLight ? 'rgba(79, 70, 229, 0.15)' : 'rgba(0, 242, 254, 0.15)';
-    const textColor = isLight ? '#475569' : '#64748b';
+    const textColor = isLight ? '#475569' : '#cbd5e1';
     const primaryColor = isLight ? '#4f46e5' : '#00f2fe';
     const accentColor = punctured ? (isLight ? '#e11d48' : '#ff2a5f') : (isLight ? '#d97706' : '#ffb703');
     
@@ -97,20 +97,20 @@ function drawStructuralImpact(coords, punctured, diameter_mm, shockwave_radius_c
     ctx.strokeStyle = accentColor;
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.arc(impactX, impactY, Math.min(25, 5 + shockwave_radius_cm / 2), 0, Math.PI * 2);
+    ctx.arc(impactX, impactY, Math.min(22, 4 + shockwave_radius_cm / 4), 0, Math.PI * 2);
     ctx.stroke();
     
     // 4. Draw central impact breach hole
     ctx.fillStyle = accentColor;
     ctx.beginPath();
-    ctx.arc(impactX, impactY, Math.max(3, diameter_mm / 2), 0, Math.PI * 2);
+    ctx.arc(impactX, impactY, Math.max(3, Math.min(10, diameter_mm / 8)), 0, Math.PI * 2);
     ctx.fill();
     
     // 5. Add text tag info
     ctx.fillStyle = textColor;
     ctx.font = '9px monospace';
     ctx.textAlign = 'center';
-    ctx.fillText(`LOC: [${coords.lat.toFixed(1)}°, ${coords.lon.toFixed(1)}°]`, centerX, canvas.height - 5);
+    ctx.fillText(`LOC: [${coords.lat.toFixed(1)}°, ${coords.lon.toFixed(1)}°]`, centerX, canvas.height - 6);
 }
 
 // Theme handling
