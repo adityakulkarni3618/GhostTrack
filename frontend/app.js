@@ -499,7 +499,9 @@ function updateGlobeTheme(isLight) {
 
 // Initialize Chart.js with space control styling
 function initChart() {
-    const ctx = document.getElementById('trajectory-chart').getContext('2d');
+    const canvas = document.getElementById('trajectory-chart');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
     const isLight = document.body.classList.contains('light-theme');
     
     const gridColor = isLight ? 'rgba(0, 0, 0, 0.05)' : 'rgba(255, 255, 255, 0.03)';
