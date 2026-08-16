@@ -3,29 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GhostTrack // Mission Control</title>
+    <title>GhostTrack // Forensic Space Debris Command Center</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
-    <!-- FontAwesome for Premium Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Custom Style Sheet -->
+    <!-- Custom Styles -->
     <link rel="stylesheet" href="style.css">
-    <!-- Chart.js -->
+    <!-- Three.js Library for 3D Globe -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Chart.js Library -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <div class="glow-container">
-        <div class="radial-glow color-primary"></div>
-        <div class="radial-glow color-secondary"></div>
-    </div>
-    
     <div class="app-container">
-        <!-- Sidebar -->
+        <!-- Sidebar Navigation -->
         <aside class="sidebar">
             <div class="brand">
-                <i class="fa-solid fa-satellite-dish brand-icon"></i>
+                <i class="fa-solid fa-satellite brand-icon"></i>
                 <div class="brand-text">
                     <h1>GHOST<span>TRACK</span></h1>
                     <p>Orbital Forensics Unit</p>
@@ -33,120 +30,241 @@
             </div>
             
             <nav class="nav-menu">
-                <a href="#" class="nav-item active"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
-                <a href="#catalog" class="nav-item"><i class="fa-solid fa-database"></i> Shadow Catalog</a>
-                <a href="#about" class="nav-item"><i class="fa-solid fa-circle-info"></i> Operations Manual</a>
+                <a href="#" class="nav-item active" id="nav-dash"><i class="fa-solid fa-gauge-high"></i> Control Deck</a>
+                <a href="#catalog" class="nav-item" id="nav-catalog"><i class="fa-solid fa-database"></i> Shadow Catalog</a>
+                <a href="#manual" class="nav-item" id="nav-manual"><i class="fa-solid fa-book-open"></i> Forensic Manual</a>
             </nav>
             
+            <!-- Side Panel Status Indicators -->
             <div class="system-status-card">
                 <div class="status-indicator">
                     <span class="pulse-dot"></span>
-                    <span class="status-label">System Online</span>
+                    <span class="status-label">Command Center Active</span>
                 </div>
                 <div class="meta-row">
-                    <span class="meta-label">Model:</span>
-                    <span class="meta-val">GhostNet PINN v1.4</span>
+                    <span class="meta-label">Core Solver:</span>
+                    <span class="meta-val">DeepXDE PINN v2.1</span>
                 </div>
                 <div class="meta-row">
-                    <span class="meta-label">Sat Target:</span>
-                    <span class="meta-val">BLITS (NORAD 35871)</span>
+                    <span class="meta-label">Propagator:</span>
+                    <span class="meta-val">SGP4 RK4 Integrator</span>
+                </div>
+                <div class="meta-row">
+                    <span class="meta-label">Threat Scan:</span>
+                    <span class="meta-val">150km Horizon</span>
                 </div>
             </div>
         </aside>
 
-        <!-- Main Dashboard Content -->
+        <!-- Main Workspace -->
         <main class="main-content">
+            <!-- Header Banner -->
             <header class="header">
                 <div class="header-title">
-                    <h2>Mission Control Center</h2>
-                    <p>Real-time sub-10cm forensic trajectory tracking and cataloging</p>
+                    <h2>Forensic Space Debris Control Room</h2>
+                    <p>Reconstruct uncooperative sub-10cm hypervelocity impact events and catalog ghost debris trajectories.</p>
                 </div>
                 <div class="header-actions">
-                    <button class="btn btn-primary" id="btn-simulate">
-                        <i class="fa-solid fa-bolt"></i> Simulate Collision Event
+                    <button id="theme-toggle" class="btn-theme-toggle" title="Toggle Light/Dark Theme">
+                        <i class="fa-solid fa-moon"></i>
                     </button>
                 </div>
             </header>
 
+            <!-- Simulation Modes Selector Deck -->
+            <section class="control-deck">
+                <h3 class="deck-title"><i class="fa-solid fa-circle-play"></i> Simulation Control Deck</h3>
+                <div class="simulation-modes">
+                    <!-- Monte Carlo Random -->
+                    <div class="mode-card active" id="mode-monte-carlo" onclick="selectSimMode('monte-carlo')">
+                        <div class="mode-header">
+                            <h4>Monte Carlo Sim</h4>
+                            <i class="fa-solid fa-shuffle mode-icon"></i>
+                        </div>
+                        <p>Generate a randomized collision event with sub-10cm debris (0.1g - 500g) hitting a target satellite at hypervelocities (7-14 km/s).</p>
+                        <div class="mode-meta">
+                            <span>Targets:</span>
+                            <span style="color: var(--color-primary);">Random Angles</span>
+                        </div>
+                        <button class="mode-btn" id="btn-run-sim" onclick="runCollisionSimulation(event)">Run Monte Carlo</button>
+                    </div>
+
+                    <!-- BLITS 2013 Historical Event -->
+                    <div class="mode-card" id="mode-blits" onclick="selectSimMode('blits')">
+                        <div class="mode-header">
+                            <h4>BLITS 2013 Crash</h4>
+                            <i class="fa-solid fa-satellite-dish mode-icon"></i>
+                        </div>
+                        <p>Load the historic 2013 Russian nanosatellite collision. Reconstruct the Fengyun-1C debris hit that knocked BLITS off its spin axis.</p>
+                        <div class="mode-meta">
+                            <span>NORAD ID:</span>
+                            <span>35871</span>
+                        </div>
+                        <button class="mode-btn" onclick="runHistoricalSimulation('blits_2013', event)">Reconstruct BLITS</button>
+                    </div>
+
+                    <!-- Canadarm2 2021 Historical Event -->
+                    <div class="mode-card" id="mode-canadarm" onclick="selectSimMode('canadarm')">
+                        <div class="mode-header">
+                            <h4>Canadarm2 (ISS) 2021</h4>
+                            <i class="fa-solid fa-circle-exclamation mode-icon"></i>
+                        </div>
+                        <p>Load the historic ISS Canadarm2 puncture event. Reconstruct the micro-debris impact that pierced the arm's thermal blanket.</p>
+                        <div class="mode-meta">
+                            <span>NORAD ID:</span>
+                            <span>25544 (ISS)</span>
+                        </div>
+                        <button class="mode-btn" onclick="runHistoricalSimulation('iss_canadarm2_2021', event)">Reconstruct ISS</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Dashboard Grid Widgets -->
             <div class="dashboard-grid">
                 <!-- Live Telemetry Card -->
                 <div class="card card-telemetry">
                     <div class="card-header">
-                        <h3><i class="fa-solid fa-wave-square"></i> Telemetry Vector Feed</h3>
-                        <span class="tag-status">Live</span>
+                        <h3><i class="fa-solid fa-chart-simple"></i> Forensic Telemetry Perturbations</h3>
+                        <span class="tag-status">Vector Feed</span>
                     </div>
                     <div class="card-body">
                         <div class="telemetry-grid">
                             <div class="telemetry-item">
-                                <span class="tele-label">&Delta;V<sub>x</sub> (Linear Velocity)</span>
+                                <span class="tele-label">&Delta;V<sub>x</sub> (Velocity Axis X)</span>
                                 <span class="tele-val" id="val-dvx">0.0000 m/s</span>
                             </div>
                             <div class="telemetry-item">
-                                <span class="tele-label">&Delta;V<sub>y</sub> (Linear Velocity)</span>
+                                <span class="tele-label">&Delta;V<sub>y</sub> (Velocity Axis Y)</span>
                                 <span class="tele-val" id="val-dvy">0.0000 m/s</span>
                             </div>
                             <div class="telemetry-item">
-                                <span class="tele-label">&Delta;V<sub>z</sub> (Linear Velocity)</span>
+                                <span class="tele-label">&Delta;V<sub>z</sub> (Velocity Axis Z)</span>
                                 <span class="tele-val" id="val-dvz">0.0000 m/s</span>
                             </div>
                             <div class="telemetry-item">
-                                <span class="tele-label">&Delta;&omega;<sub>x</sub> (Attitude Perturbation)</span>
+                                <span class="tele-label">&Delta;&omega;<sub>x</sub> (Attitude Spin X)</span>
                                 <span class="tele-val" id="val-dwx">0.0000 rad/s</span>
                             </div>
                             <div class="telemetry-item">
-                                <span class="tele-label">&Delta;&omega;<sub>y</sub> (Attitude Perturbation)</span>
+                                <span class="tele-label">&Delta;&omega;<sub>y</sub> (Attitude Spin Y)</span>
                                 <span class="tele-val" id="val-dwy">0.0000 rad/s</span>
                             </div>
                             <div class="telemetry-item">
-                                <span class="tele-label">&Delta;&omega;<sub>z</sub> (Attitude Perturbation)</span>
+                                <span class="tele-label">&Delta;&omega;<sub>z</sub> (Attitude Spin Z)</span>
                                 <span class="tele-val" id="val-dwz">0.0000 rad/s</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- GhostNet AI Inference Card -->
+                <!-- GhostNet AI PINN Solver -->
                 <div class="card card-inference">
                     <div class="card-header">
-                        <h3><i class="fa-solid fa-brain"></i> GhostNet Inference Solver</h3>
+                        <h3><i class="fa-solid fa-brain"></i> GhostNet PINN Solver</h3>
                         <span class="tag-model">PyTorch</span>
                     </div>
-                    <div class="card-body">
-                        <div class="inference-stats">
-                            <div class="stat-box">
-                                <div class="stat-header">
-                                    <span>Estimated Debris Mass</span>
-                                    <i class="fa-solid fa-weight-hanging"></i>
+                    <div class="card-body" style="display: flex; flex-direction: column; justify-content: space-between; padding: 20px;">
+                        <div class="inference-stats" style="margin-bottom: 12px; gap: 12px;">
+                            <div class="stat-box" style="padding: 12px 18px;">
+                                <div class="stat-info">
+                                    <span class="stat-header">Estimated Debris Mass</span>
+                                    <span class="stat-value" id="val-mass" style="font-size: 1.6rem;">--g</span>
+                                    <span class="ground-truth-val" id="truth-mass">Ground Truth: --</span>
                                 </div>
-                                <div class="stat-value" id="val-mass">--g</div>
-                                <div class="ground-truth-val" id="truth-mass">Ground Truth: --g</div>
+                                <i class="fa-solid fa-scale-balanced stat-icon"></i>
                             </div>
-                            <div class="stat-box">
-                                <div class="stat-header">
-                                    <span>Relative Impact Velocity</span>
-                                    <i class="fa-solid fa-gauge-simple-high"></i>
+                            <div class="stat-box" style="padding: 12px 18px;">
+                                <div class="stat-info">
+                                    <span class="stat-header">Relative Impact Velocity</span>
+                                    <span class="stat-value" id="val-velocity" style="font-size: 1.6rem;">-- km/s</span>
+                                    <span class="ground-truth-val" id="truth-velocity">Ground Truth: --</span>
                                 </div>
-                                <div class="stat-value" id="val-velocity">-- km/s</div>
-                                <div class="ground-truth-val" id="truth-velocity">Ground Truth: -- km/s</div>
+                                <i class="fa-solid fa-gauge-simple-high stat-icon"></i>
                             </div>
                         </div>
-                        <div class="inference-accuracy" id="val-accuracy">
-                            Confidence Level: <span class="pct">--%</span>
+                        <div class="inference-accuracy" id="val-accuracy" style="padding: 8px;">
+                            Solver Confidence: <span class="pct">--%</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- 2D Trajectory Map Card -->
+                <!-- 3D WebGL Earth Visualizer / 2D Plot -->
                 <div class="card card-map">
                     <div class="card-header">
-                        <h3><i class="fa-solid fa-earth-americas"></i> Probabilistic Debris Trajectory Map (24-Hour Projection)</h3>
-                        <div class="card-tools">
+                        <h3><i class="fa-solid fa-globe"></i> Trajectory Visualizer</h3>
+                        <div class="card-tools" style="display: flex; align-items: center; gap: 15px;">
+                            <div class="view-toggles" style="display: flex; background: rgba(255,255,255,0.05); padding: 2px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05);">
+                                <button id="btn-view-3d" class="toggle-view-btn active" onclick="switchView('3d')" style="background: var(--color-primary); color: #000; border: none; padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: all 0.2s;"><i class="fa-solid fa-earth-americas"></i> 3D Globe</button>
+                                <button id="btn-view-2d" class="toggle-view-btn" onclick="switchView('2d')" style="background: transparent; color: var(--color-text-muted); border: none; padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: all 0.2s;"><i class="fa-solid fa-chart-line"></i> 2D Plot</button>
+                            </div>
                             <span class="legend-dot nominal-dot"></span> Nominal Path
-                            <span class="legend-dot cloud-dot ml-2"></span> Uncertainty Cloud
+                            <span class="legend-dot cloud-dot" style="margin-left: 12px;"></span> 3D Debris Heatmap
                         </div>
                     </div>
-                    <div class="card-body chart-container">
-                        <canvas id="trajectory-chart"></canvas>
+                    <div class="card-body-wrapper" style="position: relative; min-height: 480px;">
+                        <div class="card-body" id="3d-globe-container" style="padding: 0; position: absolute; top:0; left:0; width:100%; height:100%; background: transparent; display: flex; align-items: center; justify-content: center; overflow: hidden; transition: opacity 0.3s ease;">
+                            <!-- Three.js Inject Canvas -->
+                            <div id="globe-canvas-wrapper" style="width: 100%; height: 100%; position: absolute; top:0; left:0; pointer-events: auto;"></div>
+                            <div class="hud-overlay" style="position: absolute; bottom: 15px; right: 15px; background: rgba(5,7,18,0.85); padding: 10px 14px; border-radius: 8px; border: 1px solid var(--card-border); font-size: 0.72rem; display: flex; flex-direction: column; gap: 4px; pointer-events: none; z-index: 5;">
+                                <div><i class="fa-solid fa-satellite" style="color: var(--color-primary);"></i> Target: <span id="globe-sat-target">Random / Historical</span></div>
+                                <div><i class="fa-solid fa-clock" style="color: var(--color-secondary);"></i> Span: <span style="color: #fff;">30-Day Simulation</span></div>
+                            </div>
+                        </div>
+                        <div class="card-body" id="2d-chart-container" style="padding: 20px; position: absolute; top:0; left:0; width:100%; height:100%; background: transparent; display: none; flex-direction: column; transition: opacity 0.3s ease; opacity: 0; pointer-events: auto;">
+                            <div style="flex-grow: 1; min-height: 380px; position: relative;">
+                                <canvas id="trajectory-chart" style="width: 100%; height: 100%;"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Advanced Diagnostics & Collision Avoidance Panel -->
+                <div class="card card-alerts">
+                    <div class="card-header">
+                        <h3><i class="fa-solid fa-triangle-exclamation" style="color: var(--color-accent);"></i> Diagnostics & Conjunction Risks</h3>
+                    </div>
+                    <div class="card-body" style="display: flex; flex-direction: column; gap: 20px; overflow-y: auto; max-height: 480px;">
+                        <!-- Structural Damage Widget -->
+                        <div class="structural-widget" style="background: rgba(255,255,255,0.015); border: 1px solid rgba(255,255,255,0.04); border-radius: 12px; padding: 15px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                <h4 style="font-family: var(--font-display); font-size: 0.85rem; color: #fff;"><i class="fa-solid fa-circle-radiation" style="color: var(--color-primary);"></i> Structural Diagnostic</h4>
+                                <span class="tag-status" id="hull-status" style="background: rgba(0, 242, 254, 0.08); color: var(--color-primary); border-color: rgba(0, 242, 254, 0.15); font-size: 0.65rem;">Nominal</span>
+                            </div>
+                            
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; font-size: 0.8rem;">
+                                <div>Diameter: <strong id="diag-diameter" style="color: var(--color-primary);">-- mm</strong></div>
+                                <div>Energy: <strong id="diag-ke" style="color: var(--color-secondary);">-- kJ</strong></div>
+                            </div>
+                            
+                            <!-- Solar Panel Efficiency Tracker -->
+                            <div class="solar-efficiency" style="margin-bottom: 15px;">
+                                <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--color-text-muted); margin-bottom: 4px;">
+                                    <span>Solar Panel Efficiency Loss</span>
+                                    <span id="solar-loss-val" style="color: var(--color-danger); font-weight: 700;">0%</span>
+                                </div>
+                                <div class="progress-bar" style="background: rgba(255,255,255,0.05); height: 8px; border-radius: 4px; overflow: hidden; position: relative;">
+                                    <div id="solar-progress" style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--color-accent), var(--color-danger)); transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);"></div>
+                                </div>
+                            </div>
+
+                            <!-- 2D Hit coordinates illustration -->
+                            <div class="structural-illustration" style="text-align: center; background: #010206; border-radius: 8px; border: 1px solid rgba(255,255,255,0.03); padding: 8px;">
+                                <canvas id="structural-canvas" width="220" height="110" style="display: block; margin: 0 auto;"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Active Conjunction Threat Monitor -->
+                        <div class="threat-conjunction-widget">
+                            <h4 style="font-family: var(--font-display); font-size: 0.85rem; color: #fff; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                                <i class="fa-solid fa-radar" style="color: var(--color-accent);"></i> Conjunction Threats
+                            </h4>
+                            <div id="alerts-container">
+                                <div class="no-alerts">
+                                    <i class="fa-solid fa-circle-check" style="font-size: 2rem;"></i>
+                                    <p style="font-size: 0.8rem; margin-top: 8px;">No active debris intersections. Run reconstructions to assess space lanes.</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -154,31 +272,72 @@
             <!-- Shadow Catalog Section -->
             <section class="section" id="catalog">
                 <div class="section-header">
-                    <h2><i class="fa-solid fa-database"></i> Shadow Catalog DB</h2>
-                    <p>Inferred list of non-cooperative, sub-10cm ghost orbital debris</p>
+                    <div class="section-header-title">
+                        <h2><i class="fa-solid fa-database"></i> The Shadow Catalog Database</h2>
+                        <p>Forensically inferred list of non-cooperative, sub-10cm ghost orbital debris cataloged in real-time.</p>
+                    </div>
+                    <div class="catalog-actions">
+                        <div class="search-wrapper">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" class="search-input" id="catalog-search" placeholder="Search catalog..." oninput="searchCatalog()">
+                        </div>
+                        <button class="btn-secondary" onclick="exportCatalog()"><i class="fa-solid fa-download"></i> Export JSON</button>
+                        <button class="btn-secondary btn-delete" onclick="clearCatalog()"><i class="fa-solid fa-trash-can"></i> Clear All</button>
+                    </div>
                 </div>
                 <div class="table-container card">
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th>Object ID</th>
-                                <th>Timestamp</th>
-                                <th>Estimated Mass (g)</th>
-                                <th>Impact Velocity (km/s)</th>
+                                <th>Debris ID</th>
+                                <th>Cataloged Date / Time</th>
+                                <th>Estimated Mass</th>
+                                <th>Impact Velocity</th>
                                 <th>Status</th>
-                                <th>Action</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody id="catalog-body">
-                            <!-- Injected by Javascript -->
+                            <!-- Populated dynamically -->
                         </tbody>
                     </table>
+                </div>
+            </section>
+
+            <!-- Forensic Operations Manual -->
+            <section class="section" id="manual">
+                <div class="section-header">
+                    <div class="section-header-title">
+                        <h2><i class="fa-solid fa-book-open"></i> Operations & Physics Reference</h2>
+                        <p>A reference card for the mathematical modeling and equations that power GhostTrack's solver and propagator.</p>
+                    </div>
+                </div>
+                <div class="manual-grid">
+                    <div class="manual-card">
+                        <h3><i class="fa-solid fa-brain"></i> Physics-Informed Neural Network (PINN)</h3>
+                        <p>Traditional AI needs thousands of labeled images. GhostTrack relies on a PINN that directly embeds momentum-transfer dynamics into the loss function.</p>
+                        <ul>
+                            <li><strong>Pre-impact momentum:</strong> We track the satellite's nominal TLE orbital path before the collision event.</li>
+                            <li><strong>Conservation of momentum:</strong> <code>m<sub>deb</sub> &middot; v<sub>deb</sub> + M<sub>sat</sub> &middot; v<sub>sat,0</sub> = m<sub>deb</sub> &middot; v'<sub>deb</sub> + M<sub>sat</sub> &middot; v'<sub>sat</sub></code></li>
+                            <li><strong>Sensor telemetry:</strong> Attitude changes (<code>&Delta;&omega;<sub>x,y,z</sub></code>) allow us to resolve the debris' offset impact leverage arms.</li>
+                        </ul>
+                    </div>
+
+                    <div class="manual-card">
+                        <h3><i class="fa-solid fa-clock"></i> Trajectory Propagation Math</h3>
+                        <p>Once debris velocity is estimated, we propagate its orbit using Runge-Kutta 4th Order (RK4) integration, factoring in gravitational and atmospheric perturbations.</p>
+                        <ul>
+                            <li><strong>J2 Oblate Earth Gravity:</strong> Account for Earth not being a perfect sphere, causing orbital precession.</li>
+                            <li><strong>Atmospheric Drag:</strong> <code>a<sub>drag</sub> = -0.5 &middot; C<sub>d</sub> &middot; (A/m) &middot; &rho; &middot; v &middot; <b>v</b></code></li>
+                            <li><strong>Uncertainty Cloud:</strong> Monte Carlo perturbation of initial conditions maps 3D danger margins for 30 days.</li>
+                        </ul>
+                    </div>
                 </div>
             </section>
         </main>
     </div>
     
-    <!-- Custom JS script -->
+    <!-- Custom JS logic -->
     <script src="app.js"></script>
 </body>
 </html>

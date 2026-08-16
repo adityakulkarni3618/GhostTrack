@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List
 
-from backend.simulator import generate_collision_data
+from backend.simulator import generate_collision_data, compute_collision_diagnostics
 from backend.solver import train_solver, predict_debris_properties
 from backend.propagator import propagate_trajectory
 
@@ -31,7 +31,7 @@ class TelemetryData(BaseModel):
 
 class PropagationRequest(BaseModel):
     velocity_kms: float
-    mass_g: float
+    mass_g: float = 10.0
     hours: int = 720  # Default to 30 days (720 hours)
 
 # Historical Collision Database
@@ -109,7 +109,20 @@ def post_solve(data: TelemetryData):
     try:
         telemetry_list = [data.dV_x, data.dV_y, data.dV_z, data.dW_x, data.dW_y, data.dW_z]
         predictions = predict_debris_properties(telemetry_list)
-        return predictions
+        
+        # Calculate structural/solar diagnostics
+        dV = np.array([data.dV_x, data.dV_y, data.dV_z])
+        dW = np.array([data.dW_x, data.dW_y, data.dW_z])
+        diagnostics = compute_collision_diagnostics(
+            dV, dW, 
+            mass_g=predictions["predicted_mass_g"], 
+            velocity_kms=predictions["predicted_velocity_kms"]
+        )
+        
+        return {
+            **predictions,
+            "diagnostics": diagnostics
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

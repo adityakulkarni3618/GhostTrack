@@ -75,6 +75,52 @@ def generate_collision_data(num_scenarios=500, sat_mass=50.0, sat_radius=0.5, co
         
     return np.array(X, dtype=np.float32), np.array(y, dtype=np.float32)
 
+def compute_collision_diagnostics(dV, dW, mass_g, velocity_kms, sat_radius=0.5):
+    """
+    Computes structural damage details, solar panel degradation, 
+    and estimated debris diameter for frontend diagnostics.
+    """
+    mass_kg = mass_g / 1000.0
+    vel_ms = velocity_kms * 1000.0
+    
+    # 1. Estimate Debris Diameter (aluminum density = 2700 kg/m^3)
+    volume_m3 = mass_kg / 2700.0
+    radius_m = (3.0 * volume_m3 / (4.0 * np.pi)) ** (1.0/3.0)
+    diameter_mm = radius_m * 2.0 * 1000.0
+    diameter_mm = max(1.2, diameter_mm) # Minimum size
+    
+    # 2. Kinetic energy
+    ke_joules = 0.5 * mass_kg * (vel_ms ** 2)
+    
+    # 3. Solar panel damage
+    # We model solar panel efficiency loss as a function of kinetic energy
+    solar_panel_degradation = min(100.0, float((ke_joules / 15000.0) * 100.0))
+    # Add a bit of variation based on relative impact angles inferred from torque
+    dW_mag = np.linalg.norm(dW)
+    if dW_mag > 0:
+        solar_panel_degradation *= np.random.uniform(0.7, 1.2)
+        solar_panel_degradation = min(100.0, max(0.0, solar_panel_degradation))
+    else:
+        solar_panel_degradation = 0.0
+        
+    # 4. Impact surface coordinate reconstruction [lat, lon] on satellite surface
+    lat = float(np.degrees(np.arctan2(dW[2], np.sqrt(dW[0]**2 + dW[1]**2 + 1e-6))))
+    lon = float(np.degrees(np.arctan2(dW[1], dW[0])))
+    
+    # Structural puncture probability (hypervelocity impacts puncture thin aluminum hulls easily)
+    puncture_depth_cm = diameter_mm * 0.1 * (vel_ms / 1000.0) ** (2.0/3.0)
+    hull_thickness_cm = 0.2 # 2mm satellite hull
+    punctured = bool(puncture_depth_cm > hull_thickness_cm)
+    
+    return {
+        "diameter_mm": float(diameter_mm),
+        "kinetic_energy_kj": float(ke_joules / 1000.0),
+        "solar_damage_pct": float(solar_panel_degradation),
+        "impact_coords": {"lat": lat, "lon": lon},
+        "punctured": punctured,
+        "shockwave_radius_cm": float(min(sat_radius * 100.0, puncture_depth_cm * 5.0))
+    }
+
 if __name__ == "__main__":
     X, y = generate_collision_data(5)
     print("Sample Features (dV_x, dV_y, dV_z, dW_x, dW_y, dW_z):")

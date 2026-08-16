@@ -26,7 +26,7 @@ try:
     assert "predicted_velocity_kms" in pred
     
     print("\n--- STEP 4: Testing Propagator Calculations ---")
-    results = propagate_trajectory(v_rel_mag_kms=pred["predicted_velocity_kms"], hours=24, step_mins=60, num_cloud_paths=5)
+    results = propagate_trajectory(v_rel_mag_kms=pred["predicted_velocity_kms"], hours=24, step_hours=1, num_cloud_paths=5)
     print("Success: Propagator returned results.")
     assert "nominal" in results
     assert "cloud" in results
