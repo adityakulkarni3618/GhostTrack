@@ -1371,6 +1371,27 @@ body.light-theme .hud-shells-panel label {
     color: #334155 !important;
 }
 
+/* Debris database counter pulse animation */
+@keyframes pulseHighlight {
+    0% {
+        box-shadow: 0 0 0 0 rgba(0, 242, 254, 0.45);
+        transform: scale(1);
+    }
+    50% {
+        box-shadow: 0 0 0 8px rgba(0, 242, 254, 0);
+        transform: scale(1.08);
+        background: rgba(0, 242, 254, 0.3) !important;
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(0, 242, 254, 0);
+        transform: scale(1);
+    }
+}
+
+.pulse-highlight {
+    animation: pulseHighlight 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
 
 
 

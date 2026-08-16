@@ -33,6 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (profileSelect) {
         profileSelect.value = activeProfile.id;
     }
+    updateDebrisCounter();
     
     // Smooth scrolling navigation highlights
     document.querySelectorAll('.nav-item').forEach(item => {
@@ -361,6 +362,15 @@ function initThreeGlobe() {
     window.addEventListener('pointerup', () => {
         isDragging = false;
     });
+    
+    // Mouse wheel zoom handler
+    wrapper.addEventListener('wheel', (e) => {
+        if (currentViewMode !== '3d') return;
+        e.preventDefault();
+        const zoomSpeed = 0.0035;
+        camera.position.z += e.deltaY * zoomSpeed;
+        camera.position.z = Math.max(3.0, Math.min(8.0, camera.position.z));
+    }, { passive: false });
     
     // 4. Animation loop
     function animate() {
@@ -885,6 +895,7 @@ function saveDebrisToCatalog(debris) {
     shadowCatalog.unshift(debris);
     localStorage.setItem('ghosttrack_catalog', JSON.stringify(shadowCatalog));
     renderCatalog();
+    updateDebrisCounter();
 }
 
 function renderCatalog(filteredData = null) {
@@ -956,6 +967,7 @@ window.deleteDebris = function(id) {
     shadowCatalog = shadowCatalog.filter(d => d.id !== id);
     localStorage.setItem('ghosttrack_catalog', JSON.stringify(shadowCatalog));
     renderCatalog();
+    updateDebrisCounter();
 };
 
 // Clear entire catalog
@@ -964,6 +976,7 @@ window.clearCatalog = function() {
     shadowCatalog = [];
     localStorage.removeItem('ghosttrack_catalog');
     renderCatalog();
+    updateDebrisCounter();
 };
 
 // Focus trajectory on both Globe and 2D Chart
@@ -1211,6 +1224,9 @@ window.resetCamera = function() {
     if (earthGroup) {
         earthGroup.rotation.set(0, 0, 0);
     }
+    if (camera) {
+        camera.position.set(0, 0, 6);
+    }
 };
 
 // Toggle 3D Orbit context shells
@@ -1222,5 +1238,17 @@ window.toggleOrbitShell = function(type) {
         }
     }
 };
+
+// Update and animate the dynamic debris counter badge
+function updateDebrisCounter() {
+    const counterEl = document.getElementById('debris-counter');
+    if (counterEl) {
+        counterEl.innerText = `${shadowCatalog.length} Objects`;
+        counterEl.classList.remove('pulse-highlight');
+        void counterEl.offsetWidth; // Force layout reflow to restart css animation
+        counterEl.classList.add('pulse-highlight');
+    }
+}
+
 
 
